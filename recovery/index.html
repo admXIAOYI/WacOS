@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS BaseSystem</title>
+    <link rel="stylesheet" href="../assets/style/desktop.css" />
+    <link rel="stylesheet" href="../assets/style/font.css" />
+    <link rel="stylesheet" href="../assets/style/recovery.css" />
+    <style>
+        /* 严格保留原有比例的基础样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #1a1a1a;
+            color: #fff;
+            user-select: none;
+        }
+        
+        /* 调整点：减小了 gap 和 padding，让四个选项更紧凑 */
+        [usefultools] {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            gap: 12px; /* 原来 30px，减小间距 */
+            height: 100vh;
+            box-sizing: border-box;
+            background: rgba(60, 60, 60, 0.4);
+            width: fit-content;
+            margin: 0 auto; /* 垂直居中 */
+            padding: 20px; /* 原来 40px，减小内边距 */
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        [toolschild] {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s;
+            box-sizing: border-box;
+        }
+        [toolschild]:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        [toolschild] img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+        }
+        [texts] [title] {
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0 0 4px 0;
+            color: #fff;
+        }
+        [texts] [text] {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+        }
+        /* 顶部菜单栏 */
+        [finderbar] {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: rgba(25, 25, 25, 0.85);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            z-index: 9999;
+        }
+        [menus] {
+            display: flex;
+            gap: 4px; /* ✅ 由20px改为4px，菜单之间间隙大幅缩小 */
+            align-items: center;
+            height: 100%;
+        }
+        [menus] p {
+            margin: 0;
+            font-size: 13px;
+            cursor: default;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #fff;
+        }
+        [menus] p:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        [menus] p[logo] {
+            font-size: 16px;
+            padding: 0 10px;
+            cursor: pointer;
+        }
+        /* 下拉菜单样式 */
+        .dropdown-menu {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            background: rgba(40, 40, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            min-width: 180px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            padding: 5px 0;
+            z-index: 10000;
+        }
+        .dropdown-menu.active {
+            display: flex;
+        }
+        .dropdown-menu div {
+            padding: 3px 10px;
+            font-size: 13px;
+            border-radius: 12px;
+            cursor: default;
+            transition: background 0.1s;
+        }
+        .dropdown-menu div:hover {
+            background: #007AFF;
+        }
+        .dropdown-menu .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 4px 0;
+            padding: 0;
+        }
+        .dropdown-menu .divider:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        /* 应用窗口系统 (用于弹窗) */
+        .app-window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: auto;
+            background: rgba(40, 40, 40, 0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 10001;
+            animation: windowOpen 0.15s ease-out;
+        }
+        @keyframes windowOpen {
+            from { opacity: 0; transform: translate(-50%, -48%) scale(0.98); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .app-window-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+        .window-controls span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .window-controls .close { background: #FF5F56; cursor: pointer; }
+        .app-window-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+        }
+        .app-window-body {
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body gradient>
+    <!-- Finder 顶部菜单栏 -->
+    <div finderbar noblur>
+        <div menus>
+            <p logo onclick="toggleDropdown('apple-menu')">&#63743;</p>
+            <p appname menu0>恢复</p>
+            <p menu1 onclick="toggleDropdown('file-menu')">文件</p>
+            <p menu2 onclick="toggleDropdown('edit-menu')">编辑</p>
+            <p menu3 onclick="toggleDropdown('tools-menu')">实用工具</p>
+            <p menu4 onclick="toggleDropdown('window-menu')">窗口</p>
+        </div>
+        <div controls></div>
+        <!-- 隐藏的下拉菜单区 ✅ 修改left值对齐 -->
+        <div id="apple-menu" class="dropdown-menu" style="left: 15px;">
+            <div>关于本机</div>
+            <div class="divider"></div>
+            <div>启动磁盘</div>
+            <div class="divider"></div>
+            <div onclick="window.location.href = '../firmware/index.html'">重新启动...</div>
+            <div>关机...</div>
+        </div>
+        
+        <div id="file-menu" class="dropdown-menu" style="left: 60px;">
+            <div>新建</div>
+            <div class="divider"></div>
+            <div onclick="closeAllWindows()">关闭窗口</div>
+        </div>
+        <div id="edit-menu" class="dropdown-menu" style="left: 105px;">
+            <div>撤销</div>
+            <div>重做</div>
+            <div class="divider"></div>
+            <div>剪切</div>
+            <div>复制</div>
+            <div>粘贴</div>
+        </div>
+        <div id="tools-menu" class="dropdown-menu" style="left: 150px;">
+            <div>从时间机器恢复</div>
+            <div>安装 macOS Tahoe</div>
+            <div>Safari 浏览器</div>
+            <div>磁盘工具</div>
+        </div>
+        <div id="window-menu" class="dropdown-menu" style="left: 205px;">
+            <div onclick="closeAllWindows()">关闭所有窗口</div>
+            <div class="divider"></div>
+            <div>将窗口移到最前</div>
+        </div>
+    </div>
+    <!-- 恢复工具面板 -->
+    <div usefultools>
+        <div toolschild>
+            <img src="../assets/images/时间机器.png" alt="Time Machine" />
+            <div texts>
+                <p title>从时间机器恢复</p>
+                <p text>如果您有想要恢复的系统备份。</p>
+            </div>
+        </div>
+        <div toolschild>
+            <img src="../assets/images/Tahoe.png" alt="macOS Tahoe" />
+            <div texts>
+                <p title>安装 macOS Tahoe</p>
+                <p text>使用随附的安装器来升级或安装 macOS。</p>
+            </div>
+        </div>
+        <div toolschild>
+            <img src="../assets/images/Safari浏览器.png" alt="Safari" />
+            <div texts>
+                <p title>Safari 浏览器</p>
+                <p text>浏览 Apple 支持以获取适用于 Mac 的帮助。</p>
+            </div>
+        </div>
+        <div toolschild>
+            <img src="../assets/images/磁盘工具.png" alt="Disk Utility" />
+            <div texts>
+                <p title>磁盘工具</p>
+                <p text>使用 “磁盘工具” 修复或抹掉磁盘。</p>
+            </div>
+        </div>
+    </div>
+    <!-- 原有脚本 (保留) -->
+    <script type="module" src="../src/js/recovery.js"></script>
+    <script type="module" src="../src/js/finder.js"></script>
+    <script type="module" src="../src/js/element.js"></script>
+    <!-- 新增的内联脚本，用于驱动上述功能 -->
+    <script>
+        // 1. 下拉菜单控制
+        function toggleDropdown(id) {
+            const target = document.getElementById(id);
+            if (!target) return;
+            const isActive = target.classList.contains('active');
+            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('active'));
+            if (!isActive) {
+                target.classList.add('active');
+            }
+        }
+        // 点击空白处关闭菜单
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('[finderbar]')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('active'));
+            }
+        });
+        // 2. 通用弹窗 (Alert)
+        function showAlert(title, message) {
+            const existing = document.getElementById('alert-window');
+            if (existing) existing.remove();
+            const win = document.createElement('div');
+            win.id = 'alert-window';
+            win.className = 'app-window';
+            win.innerHTML = `
+                <div class="app-window-header">
+                    <div class="window-controls">
+                        <span class="close" onclick="this.closest('.app-window').remove()"></span>
+                    </div>
+                    <div class="app-window-title">${title}</div>
+                </div>
+                <div class="app-window-body">${message}</div>
+                `;
+            document.body.appendChild(win);
+        }
+        // 3. 应用窗口系统
+        function openApp(title, content) {
+            const existing = document.querySelector(`.app-window[data-app="${title}"]`);
+            if (existing) existing.remove();
+            const win = document.createElement('div');
+            win.className = 'app-window';
+            win.dataset.app = title;
+            win.innerHTML = `
+                <div class="app-window-header">
+                    <div class="window-controls">
+                        <span class="close" onclick="this.closest('.app-window').remove()"></span>
+                    </div>
+                    <div class="app-window-title">${title}</div>
+                </div>
+                <div class="app-window-body">${content}</div>
+                `;
+            document.body.appendChild(win);
+        }
+        // 4. 关闭所有窗口
+        function closeAllWindows() {
+            document.querySelectorAll('.app-window').forEach(win => win.remove());
+        }
+    </script>
+</body>
+</html>

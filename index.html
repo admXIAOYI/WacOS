@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎访问 WacOS 26 | Welcome to WacOS 26</title>
+    <link rel="stylesheet" href="./assets/style/font.css">
+    <link rel="stylesheet" href="./assets/style/oobe.css">
+    <!--<link rel="stylesheet" href="./assets/style/cursor.css">-->
+</head>
+<body>
+<div container>
+    <div main>
+        <img src="./assets/images/Tahoe.png" alt="WacOS Logo" />
+        <p title>欢迎访问WacOS!</p>
+        <p subtitle>此页面仍在开发!</p>
+        <p description>
+此网页会在您的浏览器中带来几乎真实的 <a link href="https://apple.com.cn/mac">Mac(intosh)</a> 体验。<br>
+登录密码可以使用下列密码任选其一登录: Tahoe, Wacintosh, WacOS。那么点击继续按钮来享受丝滑的Mac体验吧!<br>
+如果您需要类似 Mac 的 Boot Chime 自检通过音效,请在点击按钮后做一些与网页的交互来绕过自动播放限制。
+        </p>
+        <div bottom-content>
+            <hr>
+            <div inner-content>
+                <widget-button onclick="getStarted()">继续</widget-button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function getStarted() {
+    setTimeout(function () {
+        window.location = 'firmware/index.html';
+    }, 50);
+}
+window.onload = () => {
+    document.getElementById('cursor').src = "assets/images/Cursor.svg";
+};
+</script>
+<!--<script src="src/js/cursor.js"></script>-->
+</body>
+</html>

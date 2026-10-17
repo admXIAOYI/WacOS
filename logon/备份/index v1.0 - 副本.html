@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WacOS 26 Login</title>
+    <style>
+* {
+    font-family: 'SFPro-Regular', 'PingFang-Regular';
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    margin:0;
+    padding:0;
+}
+body {
+    min-height: 100vh;
+    overflow: hidden;
+    /* 背景图 background.jpg */
+    background: url(../assets/images/background.jpg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+div[overlay] {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1024;
+}
+/* 时间 液态玻璃层 */
+p[time] {
+    position: absolute;
+    inset:0;
+    clip-path: url(#timePath);
+    background: rgba(255,255,255,0.99);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    filter: brightness(180%) contrast(105%);
+}
+/* 日期 液态玻璃层 */
+p[date] {
+    position: absolute;
+    inset:0;
+    clip-path: url(#datePath);
+    background: rgba(255,255,255,0.99);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    filter: brightness(180%) contrast(105%);
+}
+/* 底部登录区域，全部居中 */
+div[login] {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap:10px;
+}
+img[icon] {
+    width:72px;
+    height:72px;
+}
+p[username] {
+    color:#fff;
+    font-size:22px;
+    text-shadow: 1px 1px 6px #00000070;
+}
+input[password] {
+    box-sizing: border-box;
+    width: 240px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0 16px;
+    outline: none;
+    color: #ffffff;
+    font-size: 16px;
+    text-align:center;
+}
+input[password]::placeholder {
+    color: rgba(255, 255, 255, 0.52);
+}
+input[password]:focus {
+    background: rgba(255, 255, 255, 0.32);
+    border-color: rgba(255, 255, 255, 0.42);
+}
+p[tip] {
+    color: white;
+    text-shadow: 2px 2px 8px #000, 0px 0px 4px #000;
+    opacity: 0.72;
+    font-size: 14px;
+}
+div[svgframe] {
+    display: none;
+    width: 17px;
+    height: 17px;
+    padding: 2px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+    </style>
+</head>
+<body>
+    <div overlay></div>
+    <p time></p>
+    <p date></p>
+    <div login>
+        <img icon src="../assets/images/UsersIcon.png" />
+        <p username>Webintosh</p>
+        <input type="password" placeholder="输入密码" password />
+        <div svgframe>
+            <svg width="17px" height="16px" viewBox="0 0 17 16">
+                <g stroke="none" stroke-width="1" fill="none">
+                    <g fill="#000000">
+                        <rect fill-opacity="0.8" x="7.5" y="0" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.1" transform="translate(12.3891,4.1109) rotate(45)" x="11.389" y="1.6109" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.2" transform="translate(14,8) rotate(90)" x="13" y="5.5" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.3" transform="translate(12.3891,11.8891) rotate(135)" x="11.389" y="9.389" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.4" transform="translate(8.5,13.5) rotate(180)" x="7.5" y="11" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.5" transform="translate(4.6109,11.8891) rotate(225)" x="3.6109" y="9.389" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.6" transform="translate(3,8) rotate(270)" x="2" y="5.5" width="2" height="5" rx="1"></rect>
+                        <rect fill-opacity="0.7" transform="translate(4.6109,4.1109) rotate(315)" x="3.6109" y="1.6109" width="2" height="5" rx="1"></rect>
+                    </g>
+                </g>
+            </svg>
+        </div>
+        <p tip>你必须输入密码才能登录</p>
+    </div>
+    <!-- SVG裁剪蒙版：日期+时间全部水平居中 -->
+    <svg width="100vw" height="420">
+        <defs>
+            <clipPath id="datePath">
+                <text id="dateText" x="50%" y="60" text-anchor="middle" font-size="32px" font-family="'SFPro-Bold'">10月2日 星期五</text>
+            </clipPath>
+            <clipPath id="timePath">
+                <text id="timeText" x="50%" y="220" text-anchor="middle" font-size="160px" font-family="'SFPro-Bold'">15:27</text>
+            </clipPath>
+        </defs>
+    </svg>
+<script>
+const timeTextEl = document.getElementById("timeText");
+const dateTextEl = document.getElementById("dateText");
+function updateTimeDate() {
+    const now = new Date();
+    const weekList = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+    const month = now.getMonth()+1;
+    const day = now.getDate();
+    const week = weekList[now.getDay()];
+    const h = String(now.getHours()).padStart(2,"0");
+    const m = String(now.getMinutes()).padStart(2,"0");
+    const timeStr = `${h}:${m}`;
+    const dateStr = `${month}月${day}日 ${week}`;
+
+    timeTextEl.textContent = timeStr;
+    dateTextEl.textContent = dateStr;
+}
+updateTimeDate();
+setInterval(updateTimeDate,1000);
+
+//登录回车逻辑
+const input = document.querySelector('input[password]');
+input.onkeydown = e => {
+    if(e.key === "Enter"){
+        const pwd = input.value.trim();
+        if(pwd === "123456"){
+            window.location="../desktop/index.html";
+        }else{
+            input.style.borderColor="#ff5555";
+            setTimeout(()=>input.style.borderColor="rgba(255,255,255,0.3)",700)
+        }
+    }
+}
+</script>
+</body>
+</html>

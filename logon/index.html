@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../assets/style/font.css">
+<title>macOS Tahoe Login</title>
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+    width:100vw; height:100vh; overflow:hidden;
+    background:url("../assets/images/Tahoe-Day.jpg") center/cover no-repeat;
+    position:relative; color:#fff;
+}
+.overlay{ position:absolute; inset:0; background:rgba(0,0,0,0.12); }
+
+.scale-wrapper{
+    position:absolute; inset:0;
+    transform: scale(0.82);
+    transform-origin: center center;
+}
+
+.time-container{
+    position:absolute; top:2vh; left:50%; transform:translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+/* =========================================================
+   日期 + 时钟：文字内部毛玻璃
+   ========================================================= */
+.date-text,
+.time-text{
+    position: relative;
+    display: inline-block;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.date-text .text,
+.time-text .text{
+    color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.date-text .glass,
+.time-text .glass{
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.42) 0%,
+        rgba(255,255,255,0.22) 100%);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5) brightness(1.20);
+    backdrop-filter: blur(18px) saturate(1.5) brightness(1.20);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-position: 0 0;   mask-position: 0 0;
+}
+
+.date-text{
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1.1;
+}
+
+.time-text{
+    font-size: 9rem;
+    font-weight: 700;
+    line-height: 0.9;
+}
+
+/* 隐藏的内联 SVG：只用来提供文字形状遮罩 */
+.svg-masks{
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: visible;      /* 不再用 1px + overflow:hidden 裁切遮罩内容 */
+    pointer-events: none;
+}
+
+/* =========================================================
+   下面完全保持原样
+   ========================================================= */
+.login-panel{
+    position:absolute; bottom:-5vh; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+}
+.avatar{
+    width:88px; height:88px; border-radius:50%;
+    background:url("../assets/images/UsersIcon.png") center/cover no-repeat;
+    border:1px solid rgba(255,255,255,0.22);
+}
+.username{ font-size:1.2rem; font-weight:400; }
+.pwd-input{
+    width:230px; height:45px;
+    background:rgba(255,255,255,0.20);
+    -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(13px);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:900px; color:#fff; padding:0 12px;
+    font-size:0.95rem; outline:none;
+}
+.pwd-input::placeholder{ color:rgba(255,255,255,0.62); }
+.tip-text{ font-size:1rem; color:rgba(255,255,255,0.7); }
+
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    10% { transform: translateX(-16px); }
+    20% { transform: translateX(16px); }
+    30% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    50% { transform: translateX(-6px); }
+    60% { transform: translateX(6px); }
+    70% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+    90% { transform: translateX(-1px); }
+}
+.shake{ animation: shake 0.5s ease; }
+</style>
+</head>
+<body>
+<div class="overlay"></div>
+
+<!-- 内联 SVG 遮罩：和页面共享字体，所以会用上 font.css 的字体 -->
+<svg class="svg-masks" aria-hidden="true" focusable="false">
+  <defs>
+    <mask id="date-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse"
+          style="mask-type:luminance">
+      <text id="date-mask-text" text-anchor="middle"
+            dominant-baseline="central" fill="#fff"></text>
+    </mask>
+    <mask id="time-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse"
+          style="mask-type:luminance">
+      <text id="time-mask-text" text-anchor="middle"
+            dominant-baseline="central" fill="#fff"></text>
+    </mask>
+  </defs>
+</svg>
+
+<div class="scale-wrapper">
+    <div class="time-container">
+        <div class="date-text" id="date-wrap">
+            <span class="text" id="date"></span>
+            <span class="glass" id="date-glass"></span>
+        </div>
+        <div class="time-text" id="time-wrap">
+            <span class="text" id="time"></span>
+            <span class="glass" id="time-glass"></span>
+        </div>
+    </div>
+    <div class="login-panel">
+        <div class="avatar"></div>
+        <div class="username">Webintosh</div>
+        <input class="pwd-input" placeholder="输入密码" type="password">
+        <div class="tip-text">你必须输入密码才能登录</div>
+    </div>
+</div>
+
+<script>
+const dateEl   = document.getElementById('date');
+const timeEl   = document.getElementById('time');
+const dateWrap = document.getElementById('date-wrap');
+const timeWrap = document.getElementById('time-wrap');
+const dateGlass = document.getElementById('date-glass');
+const timeGlass = document.getElementById('time-glass');
+const dateMask     = document.getElementById('date-mask');
+const timeMask     = document.getElementById('time-mask');
+const dateMaskText = document.getElementById('date-mask-text');
+const timeMaskText = document.getElementById('time-mask-text');
+const pwdInput = document.querySelector('.pwd-input');
+
+// 允许的密码列表
+const validPasswords = ["Tahoe","WacOS","Wacintosh"];
+
+/* =========================================================
+   把文字形状写进内联 SVG 遮罩（边缘锐化版）
+   ========================================================= */
+function applyGlassMask(wrapEl, glassEl, maskEl, maskTextEl){
+    const text = wrapEl.querySelector('.text').textContent;
+    if(!text) return;
+
+    // 取整，避免亚像素尺寸导致遮罩被重采样而发虚
+    const w = Math.round(wrapEl.offsetWidth);
+    const h = Math.round(wrapEl.offsetHeight);
+    if(!w || !h) return;
+
+    const cs = getComputedStyle(wrapEl);
+
+    // 遮罩区域与玻璃层 1:1 对齐，不做任何额外缩放
+    maskEl.setAttribute('maskUnits', 'userSpaceOnUse');
+    maskEl.setAttribute('maskContentUnits', 'userSpaceOnUse');
+    maskEl.setAttribute('x', 0);
+    maskEl.setAttribute('y', 0);
+    maskEl.setAttribute('width', w);
+    maskEl.setAttribute('height', h);
+
+    // 遮罩里的文字：位置、字体全部从真实元素上取
+    maskTextEl.setAttribute('x', w / 2);
+    maskTextEl.setAttribute('y', h / 2);
+    maskTextEl.setAttribute('text-anchor', 'middle');
+    maskTextEl.setAttribute('dominant-baseline', 'central');
+    maskTextEl.setAttribute('font-size', cs.fontSize);
+    maskTextEl.setAttribute('font-family', cs.fontFamily);
+    maskTextEl.setAttribute('font-weight', cs.fontWeight);
+    maskTextEl.setAttribute('font-style', cs.fontStyle);
+    maskTextEl.setAttribute('letter-spacing', cs.letterSpacing);
+
+    // —— 锐化关键 1：几何精度渲染，关掉字体的 hinting 抖动
+    maskTextEl.setAttribute('text-rendering', 'geometricPrecision');
+
+    // —— 锐化关键 2：同色细描边，把抗锯齿产生的半透明边缘补齐
+    //    这样遮罩 alpha 从「0 → 0.5 → 1」的过渡被压成近乎「0 → 1」，
+    //    玻璃层边缘就不会再雾蒙蒙的一圈。
+    maskTextEl.setAttribute('fill', '#fff');
+    maskTextEl.setAttribute('stroke', '#fff');
+    maskTextEl.setAttribute('stroke-width', '0.3');
+    maskTextEl.setAttribute('stroke-linejoin', 'round');
+    maskTextEl.setAttribute('stroke-linecap', 'round');
+    maskTextEl.setAttribute('paint-order', 'stroke fill');
+
+    maskTextEl.textContent = text;
+
+    // 把遮罩挂到玻璃层上
+    const url = 'url(#' + maskEl.id + ')';
+    glassEl.style.webkitMaskImage = url;
+    glassEl.style.maskImage       = url;
+}
+
+/* =========================================================
+   时钟
+   ========================================================= */
+function updateClock(){
+    const now = new Date();
+    const weekArr = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+    const month = now.getMonth() + 1;
+    const day   = now.getDate();
+    const week  = weekArr[now.getDay()];
+    const dateStr = `${month}月${day}日 ${week}`;
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const timeStr = `${h}:${m}`;
+
+    dateEl.textContent = dateStr;
+    timeEl.textContent = timeStr;
+
+    requestAnimationFrame(() => {
+        applyGlassMask(dateWrap, dateGlass, dateMask, dateMaskText);
+        applyGlassMask(timeWrap, timeGlass, timeMask, timeMaskText);
+    });
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+// 字体加载完成后重新生成一次遮罩（自定义字体宽度会变）
+if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(updateClock);
+}
+window.addEventListener('resize', () => requestAnimationFrame(updateClock));
+
+/* =========================================================
+   密码校验（保持原样）
+   ========================================================= */
+pwdInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+        const inputVal = pwdInput.value.trim();
+        if(validPasswords.includes(inputVal)){
+            window.location.href = "../desktop/index.html";
+        }else{
+            pwdInput.classList.add('shake');
+            pwdInput.select();
+            setTimeout(()=>{ pwdInput.classList.remove('shake'); }, 500);
+        }
+    }
+});
+</script>
+</body>
+</html>

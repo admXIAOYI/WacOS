@@ -1,0 +1,86 @@
+<!--
+Booting page for WacOS 26
+Urls can be like following:
+/boot?boot=recovery
+/boot?boot=problem
+/boot?theme=gray
+/boot?theme=black
+/boot
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WacOS 26</title>
+    <link rel="stylesheet" href="../assets/style/boot.css" />
+    <link rel="stylesheet" href="../assets/style/font.css" />
+</head>
+<body>
+    <img logo src="../assets/images/logo.png" alt="WacOS Logo" />
+    <div frame>
+        <div processframe>
+            <div process></div>
+        </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+    const urlParams = new URLSearchParams(window.location.search);
+    //const theme = urlParams.get('theme');
+    const bootMode = urlParams.get('boot');
+    const logoEl = document.querySelector('[logo]');
+    const processEl = document.querySelector('[process]');
+    /*if(theme === "black"){
+        document.body.classList.add("theme-black");
+        logoEl.src="../assets/images/logo.png";
+    }else if(theme === "gray"){
+        document.body.classList.add("theme-gray");
+        logoEl.src="../assets/images/logo-grey.png";
+    }else{
+        document.body.classList.add("theme-gray");
+        logoEl.src="../assets/images/logo-grey.png";
+    }*/
+    let p = 0;
+    let paused = false;
+    const timer = setInterval(()=>{
+        // 在40%位置暂停10秒
+        if(p >= 40 && !paused){
+            paused = true;
+            clearInterval(timer);
+            setTimeout(()=>{
+                //10秒后恢复进度
+                const resumeTimer = setInterval(()=>{
+                    p += Math.random() * 0.85;
+                    if(p >= 100){
+                        p = 100;
+                        clearInterval(resumeTimer);
+                        setTimeout(()=>{
+                            window.location = "../logon/index.html";
+                        },700);
+                    }
+                    processEl.style.width = p + "%";
+                },45);
+            },10000);
+            return;
+        }
+
+        p += Math.random() * 0.85;
+        if(p >= 100){
+            p = 100;
+            clearInterval(timer);
+            setTimeout(()=>{
+                window.location = "../logon/index.html";
+            },700);
+        }
+        processEl.style.width = p + "%";
+    },45);
+
+    if(bootMode === "recovery"){
+        console.log("进入恢复模式");
+    }else if(bootMode === "problem"){
+        console.log("启动故障页面");
+    }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WacOS Firmware</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+<script>
+    // 获取url参数 theme
+    const urlParams = new URLSearchParams(window.location.search);
+    const theme = urlParams.get('theme');
+
+    // 播放开机音效，加try-catch防止拦截报错
+    try {
+        const audio = new Audio('../assets/sounds/Startup.mp3');
+        audio.play();
+    } catch (e) {
+        console.log("音频播放限制", e);
+    }
+
+    // 定义5秒后自动跳转的定时器（提取出来，方便长按时取消）
+    let bootTimeout = setTimeout(() => {
+        if (theme) {
+            window.location.href = `../boot/index.html?theme=${theme}`;
+        } else {
+            window.location.href = `../boot/index.html?theme=gray`;
+        }
+    }, 5000);
+
+    // ================= 长按 Alt / Option 键监听逻辑 =================
+    let altTimer = null;
+    let altTriggered = false;
+
+    window.addEventListener('keydown', (e) => {
+        // 判断是否按下 Alt 键（Mac 的 Option 键在浏览器中 key 同样是 'Alt'）
+        if (e.key === 'Alt' && !altTimer && !altTriggered) {
+            altTimer = setTimeout(() => {
+                altTriggered = true;
+                clearTimeout(bootTimeout); // 取消正常的 5 秒开机跳转
+                window.location.href = '../recovery/index.html'; // 跳转到恢复模式
+            }, 2000); // 2000 毫秒 = 2 秒
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        // 如果松开 Alt 键，清除定时器
+        if (e.key === 'Alt') {
+            clearTimeout(altTimer);
+            altTimer = null;
+            // 注意：这里不重置 altTriggered，防止用户在2秒边缘反复试探导致页面跳转两次
+        }
+    });
+    // ================================================================
+</script>
+</body>
+</html>

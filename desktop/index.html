@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>macOS Tahoe</title>
+<!-- 外部字体样式 -->
+<link rel="stylesheet" href="./assets/style/font.css">
+<!-- 主样式表 -->
+<link rel="stylesheet" href="./assets/style/desktop.css">
+</head>
+<body>
+<!-- ============ 顶部菜单栏 ============ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label"><span class="apple">&#63743;</span></span>
+      <div class="dropdown">
+        <div class="dd-item" data-action="about"><span>关于本机</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>系统设置…</span></div>
+        <div class="dd-item"><span>App Store…</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>最近使用的项目</span><span class="sc">›</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>强制退出…</span><span class="sc">⌥⌘⎋</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>睡眠</span></div>
+        <div class="dd-item"><span>重新启动…</span></div>
+        <div class="dd-item"><span>关机…</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>锁定屏幕</span><span class="sc">⌃⌘Q</span></div>
+        <div class="dd-item"><span>退出登录 Webintosh…</span><span class="sc">⇧⌘Q</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label"><strong>访达</strong></span>
+      <div class="dropdown">
+        <div class="dd-item"><span>关于访达</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>偏好设置…</span><span class="sc">⌘,</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>清倒废纸篓…</span><span class="sc">⇧⌘⌫</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>隐藏访达</span><span class="sc">⌘H</span></div>
+        <div class="dd-item"><span>隐藏其他</span><span class="sc">⌥⌘H</span></div>
+        <div class="dd-item"><span>显示全部</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>退出访达</span><span class="sc">⌘Q</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label">文件</span>
+      <div class="dropdown">
+        <div class="dd-item"><span>新建访达窗口</span><span class="sc">⌘N</span></div>
+        <div class="dd-item"><span>新建文件夹</span><span class="sc">⇧⌘N</span></div>
+        <div class="dd-item"><span>新建标签页</span><span class="sc">⌃⌘T</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>打开</span><span class="sc">⌘O</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>关闭窗口</span><span class="sc">⌘W</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>拷贝</span><span class="sc">⌘C</span></div>
+        <div class="dd-item"><span>粘贴</span><span class="sc">⌘V</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>移到废纸篓</span><span class="sc">⌘⌫</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label">编辑</span>
+      <div class="dropdown">
+        <div class="dd-item"><span>撤销</span><span class="sc">⌘Z</span></div>
+        <div class="dd-item"><span>重做</span><span class="sc">⇧⌘Z</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>剪切</span><span class="sc">⌘X</span></div>
+        <div class="dd-item"><span>拷贝</span><span class="sc">⌘C</span></div>
+        <div class="dd-item"><span>粘贴</span><span class="sc">⌘V</span></div>
+        <div class="dd-item"><span>全选</span><span class="sc">⌘A</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label">显示</span>
+      <div class="dropdown">
+        <div class="dd-item"><span>以图标显示</span><span class="sc">⌘1</span></div>
+        <div class="dd-item"><span>以列表显示</span><span class="sc">⌘2</span></div>
+        <div class="dd-item"><span>以分栏显示</span><span class="sc">⌘3</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>显示预览</span><span class="sc">⇧⌘P</span></div>
+        <div class="dd-item"><span>隐藏工具栏</span><span class="sc">⌥⌘T</span></div>
+        <div class="dd-item"><span>显示路径栏</span><span class="sc">⌥⌘P</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>进入全屏幕</span><span class="sc">⌃⌘F</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label">前往</span>
+      <div class="dropdown">
+        <div class="dd-item"><span>上一页</span><span class="sc">⌘[</span></div>
+        <div class="dd-item"><span>下一页</span><span class="sc">⌘]</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>文稿</span><span class="sc">⇧⌘O</span></div>
+        <div class="dd-item"><span>桌面</span><span class="sc">⇧⌘D</span></div>
+        <div class="dd-item"><span>下载</span><span class="sc">⌥⌘L</span></div>
+        <div class="dd-item"><span>应用程序</span><span class="sc">⇧⌘A</span></div>
+        <div class="dd-item"><span>实用工具</span><span class="sc">⇧⌘U</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>前往文件夹…</span><span class="sc">⇧⌘G</span></div>
+        <div class="dd-item"><span>连接服务器…</span><span class="sc">⌘K</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label">窗口</span>
+      <div class="dropdown">
+        <div class="dd-item"><span>最小化</span><span class="sc">⌘M</span></div>
+        <div class="dd-item"><span>缩放</span></div>
+        <div class="dd-item"><span>全屏</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>循环显示窗口</span><span class="sc">⌘`</span></div>
+        <div class="dd-item"><span>前置全部窗口</span></div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu tabindex="0">
+      <span class="menu-label">帮助</span>
+      <div class="dropdown">
+        <div class="dd-item"><span>搜索</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>macOS 使用手册</span></div>
+        <div class="dd-item"><span>帮助中心</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="menu menu-icon align-right" data-menu tabindex="0">
+      <img class="spotlight-icon" src="./assets/images/wifi.svg" alt="Wi-Fi" draggable="false">
+      <div class="dropdown">
+        <div class="dd-item"><span>Wi-Fi：打开</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>✓ 家庭网络</span></div>
+        <div class="dd-item"><span>邻居WiFi</span></div>
+        <div class="dd-item"><span>公司网络</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><span>Wi-Fi 设置…</span></div>
+      </div>
+    </div>
+
+    <div class="menu menu-icon" data-action="spotlight" tabindex="0">
+      <img class="spotlight-icon" src="./assets/images/magnifyingglass.svg" alt="聚焦搜索" draggable="false">
+    </div>
+
+    <!-- 控制中心：按钮 -->
+    <div class="menu menu-icon align-right" id="ccToggle" tabindex="0">
+      <img class="spotlight-icon" src="./assets/images/switch.2.svg" alt="控制中心" draggable="false">
+    </div>
+
+    <div class="menu menu-clock align-right" data-menu tabindex="0">
+      <span class="menu-label" id="timeText"></span>
+      <div class="dropdown dd-widget">
+        <div class="widget-time" id="widgetTime">--:--</div>
+        <div class="widget-sub"  id="widgetSub">—</div>
+        <div class="widget-cal">
+          <div class="cal-header">
+            <span class="cal-title" id="calTitle">—</span>
+            <div class="cal-nav">
+              <button type="button" id="calPrev" aria-label="上个月">‹</button>
+              <button type="button" id="calNext" aria-label="下个月">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 应用错误弹窗 ============ -->
+<div class="app-error-overlay" id="appErrorOverlay" role="dialog" aria-modal="true">
+    <div class="app-error-window">
+        <div class="app-error-icon">
+            <img id="appErrorIcon" src="" alt="">
+        </div>
+        <div class="app-error-title">加载 App 时遇到错误</div>
+        <div class="app-error-message" id="appErrorMessage">此 App 仍在开发中
+服务器返回状态码：404</div>
+        <div class="app-error-actions">
+            <button class="app-error-btn" type="button" id="appErrorOk">好</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ Spotlight 搜索覆盖层 ============ -->
+<div class="spotlight-overlay" id="spotlightOverlay">
+  <div class="spotlight-bar">
+    <div class="spotlight-field">
+      <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+      </svg>
+      <input class="spotlight-input" id="spotlightInput" type="text"
+             placeholder="Spotlight Search" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="spotlight-actions">
+      <button class="spotlight-action" type="button" aria-label="人物">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="3.6"></circle>
+          <path d="M4.8 20c0-3.6 3.2-6.2 7.2-6.2s7.2 2.6 7.2 6.2"></path>
+        </svg>
+      </button>
+      <button class="spotlight-action" type="button" aria-label="文稿">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"></path>
+          <path d="M13 3v6h6"></path>
+        </svg>
+      </button>
+      <button class="spotlight-action" type="button" aria-label="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3.2"></circle>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path>
+        </svg>
+      </button>
+      <button class="spotlight-action" type="button" aria-label="更多">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="5" width="16" height="14" rx="3"></rect>
+          <path d="M9 3v4M15 3v4"></path>
+          <path d="M8 13h4"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 气泡提示 ============ -->
+<div class="tip" id="tip" role="tooltip"></div>
+
+<!-- ============ 关于本机窗口 ============ -->
+<div class="about-window" id="aboutWindow" role="dialog" aria-label="关于本机">
+  <div class="about-titlebar" id="aboutTitlebar">
+    <div class="traffic">
+      <span class="close" id="aboutClose" role="button" aria-label="关闭"></span>
+      <span class="min" role="button" aria-label="最小化"></span>
+      <span class="max" role="button" aria-label="缩放"></span>
+    </div>
+  </div>
+
+  <div class="about-content">
+    <div class="about-device" aria-hidden="true">
+      <img src="./assets/devices/mac16,11.png" alt="Mac" draggable="false">
+    </div>
+
+    <h1 class="about-name">Mac mini</h1>
+    <div class="about-version">2024</div>
+
+    <div class="about-specs">
+      <div class="about-spec-row"><span class="k">处理器</span><span class="v">Apple M4 Pro</span></div>
+      <div class="about-spec-row"><span class="k">内存</span><span class="v">64 GB</span></div>
+      <div class="about-spec-row"><span class="k">序列号</span><span class="v">WEBINTOSH800</span></div>
+      <div class="about-spec-row"><span class="k">macOS</span><span class="v">Sequoia 15.7</span></div>
+    </div>
+
+    <div class="about-details" id="aboutDetails">
+      <div class="about-spec-row"><span class="k">显示器</span><span class="v" id="aboutScreen">—</span></div>
+      <div class="about-spec-row"><span class="k">像素比</span><span class="v" id="aboutDpr">—</span></div>
+      <div class="about-spec-row"><span class="k">逻辑核心</span><span class="v" id="aboutCores">—</span></div>
+      <div class="about-spec-row"><span class="k">系统语言</span><span class="v" id="aboutLang">—</span></div>
+      <div class="about-spec-row"><span class="k">时区</span><span class="v" id="aboutTz">—</span></div>
+    </div>
+
+    <button class="about-more-btn" type="button" id="aboutMore">更多信息…</button>
+    <div><span class="about-regulatory">监管认证</span></div>
+
+    <div class="about-copyright">
+      &#63743;™和© 1983 - 2025 Apple Inc.<br>
+      参考设计来源于 Apple macOS UI 设计。
+    </div>
+  </div>
+</div>
+
+<!-- ============ 控制中心面板 ============ -->
+<div class="control-center" id="controlCenter" role="dialog" aria-label="控制中心">
+    <!-- 组 1：Wi-Fi + 蓝牙 + 隔空投送 + 音乐 -->
+    <div class="cc-grid-1">
+        <div class="cc-card cc-wifi active-soft">
+            <div class="cc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                    <circle cx="12" cy="20" r="1"/>
+                </svg>
+            </div>
+            <div class="info">
+                <div class="cc-title">Wi-Fi</div>
+                <div class="cc-sub">Home</div>
+            </div>
+        </div>
+
+        <div class="cc-card cc-round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/>
+            </svg>
+        </div>
+
+        <div class="cc-card cc-round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a6 6 0 0 0-3.6 10.8L12 17l3.6-3.2A6 6 0 0 0 12 3z"/>
+                <circle cx="12" cy="9" r="2"/>
+                <path d="M6 17a9 9 0 0 0 12 0"/>
+            </svg>
+        </div>
+
+        <div class="cc-card cc-music">
+            <div class="album">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="info">
+                <div class="cc-title">Beatles</div>
+                <div class="cc-sub">Black Country, New…</div>
+            </div>
+            <div class="controls">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 5L6 9H2v6h4l5 4V5z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5l14 7-14 7z"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- 组 2：专注 + 屏幕镜像 + 画中画 -->
+    <div class="cc-grid-2">
+        <div class="cc-card cc-focus">
+            <div class="cc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </div>
+            <div class="info">
+                <div class="cc-title">Focus</div>
+            </div>
+        </div>
+
+        <div class="cc-card cc-mini">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="14" height="10" rx="2"/>
+                <path d="M8 21h8"/>
+                <path d="M14 9l7-4v10l-7-4z" fill="currentColor" stroke="none"/>
+            </svg>
+        </div>
+
+        <div class="cc-card cc-mini">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="12" height="9" rx="1.5"/>
+                <rect x="17" y="8" width="4" height="8" rx="1" fill="currentColor" stroke="none" opacity=".55"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Display -->
+    <div class="cc-card cc-slider-card">
+        <div class="head">
+            <span>Display</span>
+        </div>
+        <div class="cc-slider-row">
+            <svg class="edge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+            </svg>
+            <input class="cc-slider" type="range" min="0" max="100" value="70" aria-label="显示器亮度">
+            <svg class="edge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M19.8 4.2l-2.1 2.1M6.3 17.7l-2.1 2.1"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Sound -->
+    <div class="cc-card cc-slider-card">
+        <div class="head">
+            <span>Sound</span>
+        </div>
+        <div class="cc-slider-row">
+            <svg class="edge" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            </svg>
+            <input class="cc-slider" type="range" min="0" max="100" value="60" aria-label="声音">
+            <svg class="edge" viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <path d="M15.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="2"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 四个圆形快捷按钮 -->
+    <div class="cc-grid-3">
+        <div class="cc-card cc-shortcut">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="13" r="8"/>
+                <path d="M12 9v4l2.5 2.5"/>
+                <path d="M9 2h6"/>
+            </svg>
+        </div>
+        <div class="cc-card cc-shortcut">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="3" width="14" height="18" rx="2"/>
+                <path d="M9 7h6"/>
+                <path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/>
+            </svg>
+        </div>
+        <div class="cc-card cc-shortcut">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a9 9 0 1 0 9 9"/>
+                <path d="M12 7v5l3 2"/>
+            </svg>
+        </div>
+        <div class="cc-card cc-shortcut">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                <circle cx="12" cy="13" r="3.5"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Edit Controls -->
+    <button class="cc-edit" type="button">Edit Controls</button>
+</div>
+
+<!-- ============ Dock ============ -->
+<div class="dockcontainer">
+    <div class="dock" id="dockWrap" role="toolbar" aria-label="程序坞">
+        <div class="dock-item" data-name="访达"><div class="icon-wrap"><img src="./assets/icons/explorer.png" alt="访达" draggable="false"></div><div class="light on"></div></div>
+        <div class="dock-item" data-name="Apps"><div class="icon-wrap"><img src="./assets/icons/pad.png" alt="Apps" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="App Store"><div class="icon-wrap"><img src="./assets/icons/App Store.png" alt="App Store" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="Safari 浏览器"><div class="icon-wrap"><img src="./assets/icons/Safari.png" alt="Safari 浏览器" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="信息"><div class="icon-wrap"><img src="./assets/icons/Messages.png" alt="信息" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="邮件"><div class="icon-wrap"><img src="./assets/icons/Mail.png" alt="邮件" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="地图"><div class="icon-wrap"><img src="./assets/icons/Maps.png" alt="地图" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="照片"><div class="icon-wrap"><img src="./assets/icons/Photos.png" alt="照片" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="FaceTime 通话"><div class="icon-wrap"><img src="./assets/icons/FaceTime.png" alt="FaceTime 通话" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="日历"><div class="icon-wrap"><img src="./assets/icons/Calendar.png" alt="日历" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="通讯录"><div class="icon-wrap"><img src="./assets/icons/Contacts.png" alt="通讯录" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="提醒事项"><div class="icon-wrap"><img src="./assets/icons/Reminders.png" alt="提醒事项" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="备忘录"><div class="icon-wrap"><img src="./assets/icons/Notes.png" alt="备忘录" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="音乐"><div class="icon-wrap"><img src="./assets/icons/applemusic.png" alt="音乐" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="Game"><div class="icon-wrap"><img src="./assets/icons/xboxpcapp.png" alt="Game" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="Apple TV"><div class="icon-wrap"><img src="./assets/icons/Apple TV.png" alt="Apple TV" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="新闻"><div class="icon-wrap"><img src="./assets/icons/News.png" alt="新闻" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="系统设置"><div class="icon-wrap"><img src="./assets/icons/System Settings.png" alt="系统设置" draggable="false"></div><div class="light"></div></div>
+
+        <div class="dock-item sep"><div class="divider"></div></div>
+
+        <div class="dock-item" data-name="下载"><div class="icon-wrap"><img src="./assets/icons/folder-download.png" alt="下载" draggable="false"></div><div class="light"></div></div>
+        <div class="dock-item" data-name="废纸篓"><div class="icon-wrap"><img src="./assets/icons/Trash_Empty.png" alt="废纸篓" draggable="false"></div><div class="light"></div></div>
+    </div>
+</div>
+
+<!-- 交互脚本（defer：等 DOM 解析完再执行，效果等同原来放在 body 末尾） -->
+<script src="./assets/script/desktop.js" defer></script>
+<script src="./assets/script/Apps.js" defer></script>
+<script src="./assets/script/Safari.js" defer></script>
+</body>
+</html>

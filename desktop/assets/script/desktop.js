@@ -610,105 +610,509 @@ document.addEventListener('keydown', e => {
         }
     });
 
+/* ==========================================
+   Dock 栏右键菜单（完美版：防溢出 + 访达定制 + 终极关闭）
+   ========================================== */
+(function() {
+    'use strict';
 
-    /* ==========================================
-       功能 2：Dock 栏右键菜单
-       ========================================== */
-    const dock = document.getElementById('dockWrap');
+    // 1. 注入 CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        .mac-context-menu {
+            position: fixed;
+            z-index: 999999;
+            min-width: 180px; padding: 5px; border-radius: 10px;
+            background: rgba(50, 50, 55, 0.65);
+            -webkit-backdrop-filter: blur(24px) saturate(1.8);
+            backdrop-filter: blur(24px) saturate(1.8);
+            border: 1px solid rgba(255,255,255,.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,.4);
+            color: #fff; font-size: 13px; display: none; opacity: 0;
+            transition: opacity 0.1s;
+            max-width: calc(100vw - 16px);
+            max-height: calc(100vh - 16px);
+            overflow: auto;
+        }
+        .mac-context-menu.on { display: block; opacity: 1; }
+        .mac-context-menu .ctx-item {
+            padding: 4px 10px; border-radius: 5px; cursor: default;
+            user-select: none; -webkit-user-select: none;
+        }
+        .mac-context-menu .ctx-item:hover { background: #0a84ff; color: #fff; }
+        .mac-context-menu .ctx-sep { height: 1px; background: rgba(255,255,255,.1); margin: 4px 8px; }
+    `;
+    document.head.appendChild(style);
+
+    // 2. 创建菜单 DOM
     const ctxMenu = document.createElement('div');
     ctxMenu.className = 'mac-context-menu';
     ctxMenu.innerHTML = `
-        <div class="ctx-item">选项</div>
+        <div class="ctx-item" data-ctx="options">选项</div>
         <div class="ctx-sep"></div>
-        <div class="ctx-item">在访达中显示</div>
-        <div class="ctx-item">显示所有窗口</div>
-        <div class="ctx-sep"></div>
-        <div class="ctx-item">退出</div>
+        <div class="ctx-item" data-ctx="reveal">在访达中显示</div>
+        <div class="ctx-item" data-ctx="showAll">显示所有窗口</div>
+        <div class="ctx-sep" id="ctxQuitSep"></div>
+        <div class="ctx-item" data-ctx="quit" id="ctxQuitBtn">退出</div>
     `;
     document.body.appendChild(ctxMenu);
 
+    let ctxAppId = null;
+    const dock = document.getElementById('dockWrap');
+
+    // 3. 防止菜单溢出屏幕的定位函数
+    function placeCtxMenu(x, y) {
+        const pad = 8;
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+
+        ctxMenu.style.left = '0px';
+        ctxMenu.style.top = '0px';
+        ctxMenu.classList.add('on');
+        
+        const rect = ctxMenu.getBoundingClientRect();
+        let left = x;
+        let top = y;
+
+        if (left + rect.width + pad > vw) left = left - rect.width;
+        if (left < pad) left = pad;
+
+        if (top + rect.height + pad > vh) top = top - rect.height;
+        if (top < pad) top = pad;
+
+        ctxMenu.style.left = left + 'px';
+        ctxMenu.style.top = top + 'px';
+    }
+
     if (dock) {
-        // 阻止 Dock 的默认右键菜单
+        // 4. 监听右键事件
         dock.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             const item = e.target.closest('.dock-item');
             if (!item || item.classList.contains('sep')) return;
 
-            // 定位菜单在鼠标位置
-            ctxMenu.style.left = e.clientX + 'px';
-            ctxMenu.style.top = (e.clientY - 30) + 'px'; 
-            ctxMenu.classList.add('on');
+            ctxAppId = item.dataset.name || 'Unknown';
+            const quitBtn = document.getElementById('ctxQuitBtn');
+            const quitSep = document.getElementById('ctxQuitSep');
+
+            // 访达不能退出
+            if (ctxAppId === '访达') {
+                quitBtn.style.display = 'none';
+                quitSep.style.display = 'none';
+            } else {
+                quitBtn.style.display = 'block';
+                quitSep.style.display = 'block';
+            }
+
+            placeCtxMenu(e.clientX, e.clientY);
         });
 
-        // 点击任意地方隐藏菜单
+        // 5. 监听菜单项点击事件（核心关闭逻辑）
+        ctxMenu.addEventListener('click', (e) => {
+            const el = e.target.closest('.ctx-item');
+            if (!el) return;
+            
+            const action = el.dataset.ctx;
+
+            if (action === 'quit' && ctxAppId) {
+                // 清理错误弹窗与关于本机
+                if (typeof hideAppError === 'function') hideAppError();
+                const errorOverlay = document.getElementById('appErrorOverlay');
+                if (errorOverlay) errorOverlay.classList.remove('on');
+                
+                const aboutWin = document.getElementById('aboutWindow');
+                if (aboutWin) aboutWin.classList.remove('on');
+
+                // 熄灭 Dock 指示灯
+                const light = dock.querySelector(`.dock-item[data-name="${ctxAppId}"] .light`);
+                if (light) light.classList.remove('on');
+
+                // 针对 Safari 的终极强杀逻辑
+                if (ctxAppId.includes('Safari')) {
+                    const safariWindow = document.getElementById('safariWindow') || document.querySelector('.safari-window');
+                    if (safariWindow) {
+                        // 1. 优先尝试找红绿灯点击（这会走 Safari.js 的原生逻辑）
+                        const closeBtn = safariWindow.querySelector('.traffic .close') || safariWindow.querySelector('.safari-close');
+                        if (closeBtn) closeBtn.click();
+
+                        // 2. 延迟检查：如果因为放大/遮挡导致点红绿灯没用，直接暴力强杀
+                        setTimeout(() => {
+                            const styleCheck = window.getComputedStyle(safariWindow);
+                            // 如果窗口依然显示，说明卡住了
+                            if (styleCheck.display !== 'none' && styleCheck.opacity !== '0') {
+                                safariWindow.classList.remove('on');
+                                
+                                // 清除所有可能导致“放大后卡死”的内联样式
+                                safariWindow.style.width = '';
+                                safariWindow.style.height = '';
+                                safariWindow.style.transform = '';
+                                safariWindow.style.top = '';
+                                safariWindow.style.left = '';
+                                safariWindow.style.borderRadius = '';
+                                
+                                // 最终隐藏
+                                safariWindow.style.display = 'none';
+                                safariWindow.style.opacity = '0';
+                            }
+                        }, 100);
+                    }
+                }
+            }
+
+            // 操作完隐藏菜单
+            ctxMenu.classList.remove('on');
+            ctxAppId = null;
+        });
+
+        // 6. 监听下次点击（解决再次点击无反应的问题）
+        // 在点击事件捕获阶段，如果发现之前被强杀了，立刻还原样式，让 Safari.js 能正常工作
+        dock.addEventListener('pointerdown', function(e) {
+            const item = e.target.closest('.dock-item');
+            if (!item) return;
+            const appName = item.dataset.name;
+
+            if (appName && appName.includes('Safari')) {
+                const sWin = document.getElementById('safariWindow') || document.querySelector('.safari-window');
+                if (sWin) {
+                    if (sWin.style.display === 'none') sWin.style.display = '';
+                    if (sWin.style.opacity === '0') sWin.style.opacity = '';
+                }
+            }
+        }, true);
+
+        // 7. 点击页面其他任意地方，隐藏菜单
         document.addEventListener('pointerdown', (e) => {
             if (!e.target.closest('.mac-context-menu')) {
                 ctxMenu.classList.remove('on');
+                ctxAppId = null;
             }
         });
+
+        // 窗口尺寸改变时隐藏菜单
+        window.addEventListener('resize', () => {
+            ctxMenu.classList.remove('on');
+            ctxAppId = null;
+        });
     }
+})();
+/* ==========================================
+   Spotlight 搜索功能（平滑过渡 + 全屏应用搜索）
+   ========================================== */
+(function() {
+    'use strict';
 
+    // 1. 整合所有应用数据
+    const allApps = [
+        { name: '系统设置', icon: 'System Settings.png' },
+        { name: 'Game', icon: 'xboxpcapp.png' },
+        { name: 'App Store', icon: 'App Store.png' },
+        { name: '日历', icon: 'Calendar.png' },
+        { name: '通讯录', icon: 'Contacts.png' },
+        { name: '预览', icon: 'Preview.png' },
+        { name: '时间机器', icon: 'Time-Machine.png' },
+        { name: '图书', icon: 'Books.png' },
+        { name: 'Keynote 讲演', icon: 'Keynote.png' },
+        { name: 'Pages 文稿', icon: 'Pages.png' },
+        { name: 'Numbers 表格', icon: 'Numbers.png' },
+        { name: '备忘录', icon: 'Notes.png' },
+        { name: '提醒事项', icon: 'Reminders.png' },
+        { name: '查找', icon: 'Find My.png' },
+        { name: '计算器', icon: 'Calculator.png' },
+        { name: '时钟', icon: 'Clock.png' },
+        { name: '密码', icon: 'Passwords.png' },
+        { name: '终端', icon: 'Terminal.png' },
+        { name: '测距仪', icon: 'Measure.png' },
+        { name: '翻译', icon: 'Translate.png' },
+        { name: '语音备忘录', icon: 'Voice Memos.png' },
+        { name: '隔空投送', icon: 'Airdrop.png' },
+        { name: '活动监视器', icon: 'Systemtray.png' },
+        { name: '任务管理器', icon: 'Taskmgr.png' },
+        { name: '网络', icon: 'Network.png' },
+        { name: '文本编辑', icon: 'notepad.png' },
+        { name: '待办事项', icon: 'todo.png' },
+        { name: '音乐', icon: 'applemusic.png' },
+        { name: 'Apple TV', icon: 'Apple TV.png' },
+        { name: '播客', icon: 'Podcasts.png' },
+        { name: 'Photo Booth', icon: 'Photo Booth.png' },
+        { name: '照片', icon: 'Photos.png' },
+        { name: 'QuickTime Player', icon: 'QuickTime Player.png' },
+        { name: 'iMovie 剪辑', icon: 'iMovie.png' },
+        { name: 'Final Cut Pro', icon: 'Final Cut Pro.png' },
+        { name: '无边记', icon: 'Freeform.png' },
+        { name: 'Lyricify', icon: 'Lyricify for Spotify.png' },
+        { name: 'iTunes', icon: 'itunes.png' },
+        { name: '邮件', icon: 'Mail.png' },
+        { name: '信息', icon: 'Messages.png' },
+        { name: 'FaceTime 通话', icon: 'FaceTime.png' },
+        { name: '地图', icon: 'Maps.png' },
+        { name: '电话', icon: 'Phone.png' },
+        { name: 'Safari 浏览器', icon: 'Safari.png' },
+        { name: '邮件', icon: 'olk.png' },
+        { name: 'FaceTime 通话', icon: 'ms-teams.png' },
+        { name: '相机', icon: 'Camera.png' },
+        { name: '健身', icon: 'Fitness.png' },
+        { name: '健康', icon: 'Health.png' },
+        { name: '家庭', icon: 'Home.png' },
+        { name: '钱包', icon: 'Wallet.png' },
+        { name: 'Watch', icon: 'Watch.png' },
+        { name: '天气', icon: 'Weather.png' },
+        { name: '股市', icon: 'Stocks.png' },
+    ];
 
-    /* ==========================================
-       功能 3：Spotlight 搜索输入实时反馈
-       ========================================== */
     const spotInput = document.getElementById('spotlightInput');
-    const spotField = document.querySelector('.spotlight-field');
-    
-    // 创建搜索结果容器
+    const spotBar = document.querySelector('.spotlight-bar');
+    const spotlightOverlay = document.getElementById('spotlightOverlay');
+
+    if (!spotInput || !spotBar) return;
+
+    // 2. 注入展开与收缩所需的 CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        /* ===== 容器过渡动画 ===== */
+        .spotlight-bar {
+            transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), 
+                        height 0.35s cubic-bezier(0.22, 1, 0.36, 1), 
+                        background 0.3s ease, 
+                        border-radius 0.3s ease, 
+                        box-shadow 0.3s ease,
+                        border 0.3s ease;
+            border-radius: 999px;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        /* ===== 搜索激活状态（全宽大面板） ===== */
+        .spotlight-bar.searching {
+            width: 580px;
+            height: 450px;
+            background: rgba(255, 255, 255, 0.85);
+            -webkit-backdrop-filter: blur(30px) saturate(1.8);
+            backdrop-filter: blur(30px) saturate(1.8);
+            border: 1px solid rgba(255,255,255,.6);
+            box-shadow: 0 20px 50px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,1);
+            border-radius: 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* ===== 搜索状态下隐藏右侧四个按钮 ===== */
+        .spotlight-bar.searching .spotlight-actions {
+            display: none;
+        }
+
+        /* ===== 搜索状态下顶部输入框适配 ===== */
+        .spotlight-bar.searching .spotlight-field {
+            width: 100%;
+            height: 60px;
+            min-width: 0;
+            border-radius: 0;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* ===== 结果列表基础样式 ===== */
+        .spotlight-results {
+            position: absolute;
+            top: 54px; left: 0; width: 100%;
+            border-radius: 12px; 
+            background: rgba(255,255,255,.85);
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0,0,0,.15);
+            display: none; overflow: hidden; padding: 6px;
+            max-height: 350px; overflow-y: auto;
+            z-index: 20001;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .spotlight-results.on { 
+            display: block; 
+            opacity: 1;
+        }
+
+        /* ===== 搜索状态下结果列表展开 ===== */
+        .spotlight-bar.searching .spotlight-results {
+            position: static;
+            width: 100%;
+            flex: 1;
+            height: 0;
+            max-height: none;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 8px;
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+        }
+
+        /* ===== 结果项样式 ===== */
+        .spotlight-result-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 12px; border-radius: 8px; color: #1c1c1e;
+            font-size: 14px; cursor: default; transition: background 0.1s;
+            user-select: none; -webkit-user-select: none;
+        }
+        .spotlight-result-item:hover, .spotlight-result-item.selected { 
+            background: #0a84ff; color: #fff; 
+        }
+        .spotlight-result-item img {
+            width: 28px; height: 28px; object-fit: contain;
+            pointer-events: none;
+        }
+        .spotlight-result-item .app-name {
+            flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            pointer-events: none;
+        }
+        .spotlight-result-item .app-action {
+            font-size: 12px; opacity: 0.5; display: none; pointer-events: none;
+        }
+        .spotlight-result-item:hover .app-action, .spotlight-result-item.selected .app-action {
+            display: block;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 3. 创建结果容器，直接挂在 spotlight-bar 下面以支持 flex 布局
     const resultsBox = document.createElement('div');
     resultsBox.className = 'spotlight-results';
-    spotField.style.position = 'relative'; // 确保下拉框定位正确
-    spotField.appendChild(resultsBox);
+    spotBar.appendChild(resultsBox);
 
-    const mockApps = ['访达', '系统设置', 'Safari 浏览器', 'App Store', '备忘录', '音乐', '计算器'];
+    // 4. 打开应用逻辑
+    function launchApp(appName, appIcon) {
+        // 关闭并重置 Spotlight
+        resetSpotlight();
 
-    if (spotInput) {
-        spotInput.addEventListener('input', (e) => {
-            const val = e.target.value.trim().toLowerCase();
-            resultsBox.innerHTML = '';
-            
-            if (!val) {
-                resultsBox.classList.remove('on');
-                return;
-            }
-
-            // 简单的模糊搜索
-            const matches = mockApps.filter(app => app.toLowerCase().includes(val));
-            
-            if (matches.length > 0) {
-                matches.forEach(match => {
-                    const el = document.createElement('div');
-                    el.className = 'spotlight-result-item';
-                    el.innerHTML = `<span>🔍</span> <span>${match}</span>`;
-                    el.addEventListener('click', () => {
-                        if (typeof showAppError === 'function') {
-                            showAppError({ name: match, message: `正在启动 ${match}...\n(这是 Spotlight 扩展功能)` });
-                        }
-                        document.getElementById('spotlightOverlay').classList.remove('on');
-                        spotInput.value = '';
-                        resultsBox.classList.remove('on');
-                    });
-                    resultsBox.appendChild(el);
+        const dockItem = document.querySelector(`.dock-item[data-name="${appName}"]`);
+        if (dockItem) {
+            dockItem.click();
+        } else {
+            if (typeof showAppError === 'function') {
+                showAppError({
+                    name: appName,
+                    icon: `./assets/icons/${appIcon}`
                 });
-                resultsBox.classList.add('on');
-            } else {
-                const el = document.createElement('div');
-                el.className = 'spotlight-result-item';
-                el.innerHTML = `<span style="opacity:.5">无匹配结果</span>`;
-                resultsBox.appendChild(el);
-                resultsBox.classList.add('on');
             }
-        });
+        }
+    }
 
-        // 关闭 Spotlight 时清空搜索结果
-        document.getElementById('spotlightOverlay').addEventListener('click', (e) => {
-            if (!e.target.closest('.spotlight-bar')) {
-                resultsBox.classList.remove('on');
+    // 5. 渲染搜索结果
+    let selectedIndex = -1;
+    function renderResults(matches) {
+        resultsBox.innerHTML = '';
+        selectedIndex = -1;
+
+        if (matches.length === 0) {
+            const el = document.createElement('div');
+            el.className = 'spotlight-result-item';
+            el.innerHTML = `<span style="opacity:.5">未找到相关应用</span>`;
+            resultsBox.appendChild(el);
+            resultsBox.classList.add('on');
+            return;
+        }
+
+        matches.forEach((app, index) => {
+            const el = document.createElement('div');
+            el.className = 'spotlight-result-item';
+            el.innerHTML = `
+                <img src="./assets/icons/${app.icon}" alt="${app.name}" draggable="false">
+                <span class="app-name">${app.name}</span>
+                <span class="app-action">打开</span>
+            `;
+            el.addEventListener('click', () => launchApp(app.name, app.icon));
+            
+            el.addEventListener('mouseenter', () => {
+                selectedIndex = index;
+                updateSelection();
+            });
+
+            resultsBox.appendChild(el);
+        });
+        resultsBox.classList.add('on');
+    }
+
+    function updateSelection() {
+        const items = resultsBox.querySelectorAll('.spotlight-result-item');
+        items.forEach((item, idx) => {
+            if (idx === selectedIndex) {
+                item.classList.add('selected');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('selected');
             }
         });
     }
 
+    // 6. 重置 Spotlight 状态（用于关闭或清空时）
+    function resetSpotlight() {
+        spotBar.classList.remove('searching');
+        resultsBox.classList.remove('on');
+        spotInput.value = '';
+        selectedIndex = -1;
+        if (spotlightOverlay) spotlightOverlay.classList.remove('on');
+    }
+
+    // 7. 监听输入事件
+    spotInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        
+        // 【核心】如果输入了内容，展开大窗口；如果清空，收缩回胶囊
+        if (val.length > 0) {
+            spotBar.classList.add('searching');
+        } else {
+            spotBar.classList.remove('searching');
+            resultsBox.classList.remove('on');
+            return;
+        }
+
+        const matches = allApps.filter(app => 
+            app.name.toLowerCase().includes(val)
+        );
+
+        renderResults(matches);
+    });
+
+    // 8. 键盘操作支持
+    spotInput.addEventListener('keydown', (e) => {
+        const items = resultsBox.querySelectorAll('.spotlight-result-item');
+        const hasResults = resultsBox.classList.contains('on') && items.length > 0 && !items[0].textContent.includes('未找到');
+
+        if (e.key === 'Escape') {
+            resetSpotlight();
+            return;
+        }
+
+        if (!hasResults) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex + 1) % items.length;
+            updateSelection();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+            updateSelection();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const targetIndex = selectedIndex >= 0 ? selectedIndex : 0;
+            items[targetIndex].click();
+        }
+    });
+
+    // 9. 关闭 Spotlight（点击遮罩层）
+    if (spotlightOverlay) {
+        spotlightOverlay.addEventListener('click', (e) => {
+            if (!e.target.closest('.spotlight-bar')) {
+                resetSpotlight();
+            }
+        });
+    }
+
+})();
 })();
 (function() {
     'use strict';
@@ -865,43 +1269,6 @@ document.addEventListener('keydown', e => {
             }, 3000);
         }
     });
-
-
-    /* ==========================================
-       4. Dock 栏右键菜单
-       ========================================== */
-    const dock = document.getElementById('dockWrap');
-    const ctxMenu = document.createElement('div');
-    ctxMenu.className = 'mac-context-menu';
-    ctxMenu.innerHTML = `
-        <div class="ctx-item">选项</div>
-        <div class="ctx-sep"></div>
-        <div class="ctx-item">在访达中显示</div>
-        <div class="ctx-item">显示所有窗口</div>
-        <div class="ctx-sep"></div>
-        <div class="ctx-item">退出</div>
-    `;
-    document.body.appendChild(ctxMenu);
-
-    if (dock) {
-        dock.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const item = e.target.closest('.dock-item');
-            if (!item || item.classList.contains('sep')) return;
-
-            ctxMenu.style.left = e.clientX + 'px';
-            ctxMenu.style.top = (e.clientY - 30) + 'px'; 
-            ctxMenu.classList.add('on');
-        });
-
-        document.addEventListener('pointerdown', (e) => {
-            if (!e.target.closest('.mac-context-menu')) {
-                ctxMenu.classList.remove('on');
-            }
-        });
-    }
-
-
     /* ==========================================
        5. Spotlight 搜索输入实时反馈
        ========================================== */

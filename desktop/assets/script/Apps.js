@@ -180,7 +180,7 @@
                 { name: 'Podcasts', icon: 'Podcasts.png' },
                 { name: 'Photo Booth', icon: 'Photo Booth.png' },
                 { name: 'Photos', icon: 'Photos.png' },
-                { name: 'QuickTime Player', icon: 'QuickTimePlayer.png' },
+                { name: 'QuickTime Player', icon: 'QuickTime Player.png' },
                 { name: 'iMovie', icon: 'iMovie.png' },
                 { name: 'Final Cut Pro', icon: 'Final Cut Pro.png' },
                 { name: 'Freeform', icon: 'Freeform.png' },
@@ -212,7 +212,6 @@
                 { name: 'Watch', icon: 'Watch.png' },
                 { name: 'Weather', icon: 'Weather.png' },
                 { name: 'Stocks', icon: 'Stocks.png' },
-                { name: 'Terminal', icon: 'windowsterminal.png' }
             ]
         }
     ];
